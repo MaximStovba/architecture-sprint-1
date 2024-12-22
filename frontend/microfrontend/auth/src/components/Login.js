@@ -30,7 +30,6 @@ function Login() {
       .catch((err) => {
         setTooltipStatus("fail");
         setIsInfoToolTipOpen(true);
-        console.log("fail");
       });
   }
 

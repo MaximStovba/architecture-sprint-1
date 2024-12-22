@@ -9,7 +9,7 @@ import ImagePopup from "./ImagePopup";
 import api from "../utils/api";
 import { CurrentUserContext } from "../contexts/CurrentUserContext";
 import EditProfilePopup from "./EditProfilePopup";
-import EditAvatarPopup from "./EditAvatarPopup";
+// import EditAvatarPopup from "./EditAvatarPopup";
 import AddPlacePopup from "./AddPlacePopup";
 // import Register from "./Register";
 // import Login from "./Login";
@@ -17,18 +17,22 @@ import AddPlacePopup from "./AddPlacePopup";
 import ProtectedRoute from "./ProtectedRoute";
 import * as auth from "../utils/auth.js";
 
-const Footer = lazy(() =>
-  import("footer/Footer").catch(() => {
+const Header = lazy(() =>
+  import("header/Header").catch(() => {
     return {
-      default: () => <div className="error">Component is not available!</div>,
+      default: () => (
+        <div className="error">Component Header is not available!</div>
+      ),
     };
   })
 );
 
-const Header = lazy(() =>
-  import("header/Header").catch(() => {
+const Footer = lazy(() =>
+  import("footer/Footer").catch(() => {
     return {
-      default: () => <div className="error">Component is not available!</div>,
+      default: () => (
+        <div className="error">Component Footer is not available!</div>
+      ),
     };
   })
 );
@@ -36,7 +40,9 @@ const Header = lazy(() =>
 const Register = lazy(() =>
   import("auth/Register").catch(() => {
     return {
-      default: () => <div className="error">Component is not available!</div>,
+      default: () => (
+        <div className="error">Component Register is not available!</div>
+      ),
     };
   })
 );
@@ -44,7 +50,19 @@ const Register = lazy(() =>
 const Login = lazy(() =>
   import("auth/Login").catch(() => {
     return {
-      default: () => <div className="error">Component is not available!</div>,
+      default: () => (
+        <div className="error">Component Login is not available!</div>
+      ),
+    };
+  })
+);
+
+const Avatar = lazy(() =>
+  import("avatar/Avatar").catch(() => {
+    return {
+      default: () => (
+        <div className="error">Component Avatar is not available!</div>
+      ),
     };
   })
 );
@@ -53,8 +71,8 @@ function App() {
   const [isEditProfilePopupOpen, setIsEditProfilePopupOpen] =
     React.useState(false);
   const [isAddPlacePopupOpen, setIsAddPlacePopupOpen] = React.useState(false);
-  const [isEditAvatarPopupOpen, setIsEditAvatarPopupOpen] =
-    React.useState(false);
+  // const [isEditAvatarPopupOpen, setIsEditAvatarPopupOpen] =
+  //   React.useState(false);
   const [selectedCard, setSelectedCard] = React.useState(null);
   const [cards, setCards] = React.useState([]);
 
@@ -70,13 +88,21 @@ function App() {
   const [jwt, setJwt] = React.useState("");
 
   const handleJwtChange = (event) => {
-    // Эта функция получает нотификации о событиях изменения jwt
     setJwt(event.detail);
   };
 
+  const handleAvatarChange = (event) => {
+    setCurrentUser(event.detail);
+  };
+
   React.useEffect(() => {
-    addEventListener("jwt-change", handleJwtChange); // Этот код добавляет подписку на нотификации о событиях изменения localStorage
-    return () => removeEventListener("jwt-change", handleJwtChange); // Этот код удаляет подписку на нотификации о событиях изменения localStorage, когда в ней пропадает необходимость
+    addEventListener("jwt-change", handleJwtChange);
+    return () => removeEventListener("jwt-change", handleJwtChange);
+  }, []);
+
+  React.useEffect(() => {
+    addEventListener("avatar-change", handleAvatarChange);
+    return () => removeEventListener("avatar-change", handleAvatarChange);
   }, []);
 
   // Запрос к API за информацией о пользователе и массиве карточек выполняется единожды, при монтировании.
@@ -116,14 +142,14 @@ function App() {
     setIsAddPlacePopupOpen(true);
   }
 
-  function handleEditAvatarClick() {
-    setIsEditAvatarPopupOpen(true);
-  }
+  // function handleEditAvatarClick() {
+  //   setIsEditAvatarPopupOpen(true);
+  // }
 
   function closeAllPopups() {
     setIsEditProfilePopupOpen(false);
     setIsAddPlacePopupOpen(false);
-    setIsEditAvatarPopupOpen(false);
+    // setIsEditAvatarPopupOpen(false);
 
     setSelectedCard(null);
   }
@@ -142,15 +168,15 @@ function App() {
       .catch((err) => console.log(err));
   }
 
-  function handleUpdateAvatar(avatarUpdate) {
-    api
-      .setUserAvatar(avatarUpdate)
-      .then((newUserData) => {
-        setCurrentUser(newUserData);
-        closeAllPopups();
-      })
-      .catch((err) => console.log(err));
-  }
+  // function handleUpdateAvatar(avatarUpdate) {
+  //   api
+  //     .setUserAvatar(avatarUpdate)
+  //     .then((newUserData) => {
+  //       setCurrentUser(newUserData);
+  //       closeAllPopups();
+  //     })
+  //     .catch((err) => console.log(err));
+  // }
 
   function handleCardLike(card) {
     const isLiked = card.likes.some((i) => i._id === currentUser._id);
@@ -204,10 +230,11 @@ function App() {
             exact
             path="/"
             component={Main}
+            componentAvatar={Avatar}
             cards={cards}
             onEditProfile={handleEditProfileClick}
             onAddPlace={handleAddPlaceClick}
-            onEditAvatar={handleEditAvatarClick}
+            // onEditAvatar={handleEditAvatarClick}
             onCardClick={handleCardClick}
             onCardLike={handleCardLike}
             onCardDelete={handleCardDelete}
@@ -239,11 +266,14 @@ function App() {
           onClose={closeAllPopups}
         />
         <PopupWithForm title="Вы уверены?" name="remove-card" buttonText="Да" />
-        <EditAvatarPopup
-          isOpen={isEditAvatarPopupOpen}
-          onUpdateAvatar={handleUpdateAvatar}
-          onClose={closeAllPopups}
-        />
+        {/* <Suspense>
+          <EditAvatarPopup
+            isOpen={isEditAvatarPopupOpen}
+            onUpdateAvatar={handleUpdateAvatar}
+            onClose={closeAllPopups}
+          />
+        </Suspense> */}
+
         <ImagePopup card={selectedCard} onClose={closeAllPopups} />
       </div>
     </CurrentUserContext.Provider>
