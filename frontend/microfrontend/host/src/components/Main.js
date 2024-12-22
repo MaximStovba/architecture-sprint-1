@@ -4,13 +4,14 @@ import { CurrentUserContext } from "../contexts/CurrentUserContext";
 
 function Main({
   cards,
-  onEditProfile,
+  // onEditProfile,
   onAddPlace,
   // onEditAvatar,
   onCardClick,
   onCardLike,
   onCardDelete,
   componentAvatar: ComponentAvatar,
+  componentProfile: ComponentProfile,
 }) {
   const currentUser = React.useContext(CurrentUserContext);
 
@@ -27,7 +28,7 @@ function Main({
         <Suspense>
           <ComponentAvatar imageStyle={imageStyle} />
         </Suspense>
-        <div className="profile__info">
+        {/* <div className="profile__info">
           <h1 className="profile__title">{currentUser.name}</h1>
           <button
             className="profile__edit-button"
@@ -35,7 +36,10 @@ function Main({
             onClick={onEditProfile}
           ></button>
           <p className="profile__description">{currentUser.about}</p>
-        </div>
+        </div> */}
+        <Suspense>
+          <ComponentProfile currentUser={currentUser} />
+        </Suspense>
         <button
           className="profile__add-button"
           type="button"

@@ -8,7 +8,7 @@ import PopupWithForm from "./PopupWithForm";
 import ImagePopup from "./ImagePopup";
 import api from "../utils/api";
 import { CurrentUserContext } from "../contexts/CurrentUserContext";
-import EditProfilePopup from "./EditProfilePopup";
+// import EditProfilePopup from "./EditProfilePopup";
 // import EditAvatarPopup from "./EditAvatarPopup";
 import AddPlacePopup from "./AddPlacePopup";
 // import Register from "./Register";
@@ -67,9 +67,19 @@ const Avatar = lazy(() =>
   })
 );
 
+const Profile = lazy(() =>
+  import("profile/Profile").catch(() => {
+    return {
+      default: () => (
+        <div className="error">Component Profile is not available!</div>
+      ),
+    };
+  })
+);
+
 function App() {
-  const [isEditProfilePopupOpen, setIsEditProfilePopupOpen] =
-    React.useState(false);
+  // const [isEditProfilePopupOpen, setIsEditProfilePopupOpen] =
+  //   React.useState(false);
   const [isAddPlacePopupOpen, setIsAddPlacePopupOpen] = React.useState(false);
   // const [isEditAvatarPopupOpen, setIsEditAvatarPopupOpen] =
   //   React.useState(false);
@@ -95,6 +105,10 @@ function App() {
     setCurrentUser(event.detail);
   };
 
+  const handleProfileChange = (event) => {
+    setCurrentUser(event.detail);
+  };
+
   React.useEffect(() => {
     addEventListener("jwt-change", handleJwtChange);
     return () => removeEventListener("jwt-change", handleJwtChange);
@@ -103,6 +117,11 @@ function App() {
   React.useEffect(() => {
     addEventListener("avatar-change", handleAvatarChange);
     return () => removeEventListener("avatar-change", handleAvatarChange);
+  }, []);
+
+  React.useEffect(() => {
+    addEventListener("profile-change", handleProfileChange);
+    return () => removeEventListener("profile-change", handleProfileChange);
   }, []);
 
   // Запрос к API за информацией о пользователе и массиве карточек выполняется единожды, при монтировании.
@@ -134,9 +153,9 @@ function App() {
     }
   }, [history, jwt]);
 
-  function handleEditProfileClick() {
-    setIsEditProfilePopupOpen(true);
-  }
+  // function handleEditProfileClick() {
+  //   setIsEditProfilePopupOpen(true);
+  // }
 
   function handleAddPlaceClick() {
     setIsAddPlacePopupOpen(true);
@@ -147,10 +166,9 @@ function App() {
   // }
 
   function closeAllPopups() {
-    setIsEditProfilePopupOpen(false);
+    // setIsEditProfilePopupOpen(false);
     setIsAddPlacePopupOpen(false);
     // setIsEditAvatarPopupOpen(false);
-
     setSelectedCard(null);
   }
 
@@ -158,15 +176,15 @@ function App() {
     setSelectedCard(card);
   }
 
-  function handleUpdateUser(userUpdate) {
-    api
-      .setUserInfo(userUpdate)
-      .then((newUserData) => {
-        setCurrentUser(newUserData);
-        closeAllPopups();
-      })
-      .catch((err) => console.log(err));
-  }
+  // function handleUpdateUser(userUpdate) {
+  //   api
+  //     .setUserInfo(userUpdate)
+  //     .then((newUserData) => {
+  //       setCurrentUser(newUserData);
+  //       closeAllPopups();
+  //     })
+  //     .catch((err) => console.log(err));
+  // }
 
   // function handleUpdateAvatar(avatarUpdate) {
   //   api
@@ -231,8 +249,9 @@ function App() {
             path="/"
             component={Main}
             componentAvatar={Avatar}
+            componentProfile={Profile}
             cards={cards}
-            onEditProfile={handleEditProfileClick}
+            // onEditProfile={handleEditProfileClick}
             onAddPlace={handleAddPlaceClick}
             // onEditAvatar={handleEditAvatarClick}
             onCardClick={handleCardClick}
@@ -255,11 +274,11 @@ function App() {
           <Footer />
         </Suspense>
 
-        <EditProfilePopup
+        {/* <EditProfilePopup
           isOpen={isEditProfilePopupOpen}
           onUpdateUser={handleUpdateUser}
           onClose={closeAllPopups}
-        />
+        /> */}
         <AddPlacePopup
           isOpen={isAddPlacePopupOpen}
           onAddPlace={handleAddPlaceSubmit}
