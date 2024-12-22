@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals */
 import React, { lazy, Suspense } from "react";
 import { Route, useHistory, Switch } from "react-router-dom";
 // import Header from "./Header";
@@ -10,9 +11,9 @@ import { CurrentUserContext } from "../contexts/CurrentUserContext";
 import EditProfilePopup from "./EditProfilePopup";
 import EditAvatarPopup from "./EditAvatarPopup";
 import AddPlacePopup from "./AddPlacePopup";
-import Register from "./Register";
-import Login from "./Login";
-import InfoTooltip from "./InfoTooltip";
+// import Register from "./Register";
+// import Login from "./Login";
+// import InfoTooltip from "./InfoTooltip";
 import ProtectedRoute from "./ProtectedRoute";
 import * as auth from "../utils/auth.js";
 
@@ -32,6 +33,22 @@ const Header = lazy(() =>
   })
 );
 
+const Register = lazy(() =>
+  import("auth/Register").catch(() => {
+    return {
+      default: () => <div className="error">Component is not available!</div>,
+    };
+  })
+);
+
+const Login = lazy(() =>
+  import("auth/Login").catch(() => {
+    return {
+      default: () => <div className="error">Component is not available!</div>,
+    };
+  })
+);
+
 function App() {
   const [isEditProfilePopupOpen, setIsEditProfilePopupOpen] =
     React.useState(false);
@@ -44,14 +61,23 @@ function App() {
   // В корневом компоненте App создана стейт-переменная currentUser. Она используется в качестве значения для провайдера контекста.
   const [currentUser, setCurrentUser] = React.useState({});
 
-  const [isInfoToolTipOpen, setIsInfoToolTipOpen] = React.useState(false);
-  const [tooltipStatus, setTooltipStatus] = React.useState("");
-
   const [isLoggedIn, setIsLoggedIn] = React.useState(false);
   //В компоненты добавлены новые стейт-переменные: email — в компонент App
   const [email, setEmail] = React.useState("");
 
   const history = useHistory();
+
+  const [jwt, setJwt] = React.useState("");
+
+  const handleJwtChange = (event) => {
+    // Эта функция получает нотификации о событиях изменения jwt
+    setJwt(event.detail);
+  };
+
+  React.useEffect(() => {
+    addEventListener("jwt-change", handleJwtChange); // Этот код добавляет подписку на нотификации о событиях изменения localStorage
+    return () => removeEventListener("jwt-change", handleJwtChange); // Этот код удаляет подписку на нотификации о событиях изменения localStorage, когда в ней пропадает необходимость
+  }, []);
 
   // Запрос к API за информацией о пользователе и массиве карточек выполняется единожды, при монтировании.
   React.useEffect(() => {
@@ -67,7 +93,7 @@ function App() {
   // при монтировании App описан эффект, проверяющий наличие токена и его валидности
   React.useEffect(() => {
     const token = localStorage.getItem("jwt");
-    if (token) {
+    if (token || jwt) {
       auth
         .checkToken(token)
         .then((res) => {
@@ -80,7 +106,7 @@ function App() {
           console.log(err);
         });
     }
-  }, [history]);
+  }, [history, jwt]);
 
   function handleEditProfileClick() {
     setIsEditProfilePopupOpen(true);
@@ -98,7 +124,7 @@ function App() {
     setIsEditProfilePopupOpen(false);
     setIsAddPlacePopupOpen(false);
     setIsEditAvatarPopupOpen(false);
-    setIsInfoToolTipOpen(false);
+
     setSelectedCard(null);
   }
 
@@ -157,34 +183,6 @@ function App() {
       .catch((err) => console.log(err));
   }
 
-  function onRegister({ email, password }) {
-    auth
-      .register(email, password)
-      .then((res) => {
-        setTooltipStatus("success");
-        setIsInfoToolTipOpen(true);
-        history.push("/signin");
-      })
-      .catch((err) => {
-        setTooltipStatus("fail");
-        setIsInfoToolTipOpen(true);
-      });
-  }
-
-  function onLogin({ email, password }) {
-    auth
-      .login(email, password)
-      .then((res) => {
-        setIsLoggedIn(true);
-        setEmail(email);
-        history.push("/");
-      })
-      .catch((err) => {
-        setTooltipStatus("fail");
-        setIsInfoToolTipOpen(true);
-      });
-  }
-
   function onSignOut() {
     // при вызове обработчика onSignOut происходит удаление jwt
     localStorage.removeItem("jwt");
@@ -197,7 +195,10 @@ function App() {
     // В компонент App внедрён контекст через CurrentUserContext.Provider
     <CurrentUserContext.Provider value={currentUser}>
       <div className="page__content">
-        <Header email={email} onSignOut={onSignOut} />
+        <Suspense>
+          <Header email={email} onSignOut={onSignOut} />
+        </Suspense>
+
         <Switch>
           <ProtectedRoute
             exact
@@ -213,10 +214,14 @@ function App() {
             loggedIn={isLoggedIn}
           />
           <Route path="/signup">
-            <Register onRegister={onRegister} />
+            <Suspense>
+              <Register />
+            </Suspense>
           </Route>
           <Route path="/signin">
-            <Login onLogin={onLogin} />
+            <Suspense>
+              <Login />
+            </Suspense>
           </Route>
         </Switch>
         <Suspense>
@@ -240,11 +245,6 @@ function App() {
           onClose={closeAllPopups}
         />
         <ImagePopup card={selectedCard} onClose={closeAllPopups} />
-        <InfoTooltip
-          isOpen={isInfoToolTipOpen}
-          onClose={closeAllPopups}
-          status={tooltipStatus}
-        />
       </div>
     </CurrentUserContext.Provider>
   );
