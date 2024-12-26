@@ -1,17 +1,20 @@
 import React, { Suspense } from "react";
-import Card from "./Card";
+// import Card from "./Card";
 import { CurrentUserContext } from "../contexts/CurrentUserContext";
 
 function Main({
   cards,
+  setCards,
   // onEditProfile,
-  onAddPlace,
+  // onAddPlace,
   // onEditAvatar,
-  onCardClick,
-  onCardLike,
-  onCardDelete,
+  // onCardClick,
+  // onCardLike,
+  // onCardDelete,
   componentAvatar: ComponentAvatar,
   componentProfile: ComponentProfile,
+  componentCards: ComponentCards,
+  componentAddBtn: ComponentAddBtn,
 }) {
   const currentUser = React.useContext(CurrentUserContext);
 
@@ -40,13 +43,16 @@ function Main({
         <Suspense>
           <ComponentProfile currentUser={currentUser} />
         </Suspense>
-        <button
+        {/* <button
           className="profile__add-button"
           type="button"
           onClick={onAddPlace}
-        ></button>
+        ></button> */}
+        <Suspense>
+          <ComponentAddBtn cards={cards} setCards={setCards} />
+        </Suspense>
       </section>
-      <section className="places page__section">
+      {/* <section className="places page__section">
         <ul className="places__list">
           {cards.map((card) => (
             <Card
@@ -58,7 +64,14 @@ function Main({
             />
           ))}
         </ul>
-      </section>
+      </section> */}
+      <Suspense>
+        <ComponentCards
+          currentUser={currentUser}
+          cards={cards}
+          setCards={setCards}
+        />
+      </Suspense>
     </main>
   );
 }
