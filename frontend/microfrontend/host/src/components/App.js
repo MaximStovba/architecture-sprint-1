@@ -2,7 +2,6 @@
 import React, { lazy, Suspense } from "react";
 import { Route, useHistory, Switch } from "react-router-dom";
 import Main from "./Main";
-import PopupWithForm from "./PopupWithForm";
 import api from "../utils/api";
 import { CurrentUserContext } from "../contexts/CurrentUserContext";
 import ProtectedRoute from "./ProtectedRoute";
@@ -197,8 +196,6 @@ function App() {
         <Suspense>
           <Footer />
         </Suspense>
-
-        <PopupWithForm title="Вы уверены?" name="remove-card" buttonText="Да" />
       </div>
     </CurrentUserContext.Provider>
   );
